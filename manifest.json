@@ -1,6 +1,6 @@
 {
   "name": "CampusLabs Assistant",
-  "version": "0.0.0.1",
+  "version": "0.0.0.2",
   "description": "Useful utilities for interacting with CampusLabs",
   "permissions": [
     "activeTab",
