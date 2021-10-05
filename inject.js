@@ -64,7 +64,33 @@ function createDates(numOfDates) {
   }
 }
 
-function formatDate(dateObj) {
+function padNumber(num, digits) {
+  str = num.toString();
+
+  while (str.length < digits) {
+    str = '0' + str;
+  }
+
+  return str;
+}
+
+function format12HourTime(dateObj) {
+  let militaryHours = dateObj.getHours().toString();
+  let hours = (dateObj.getHours() % 12);
+
+  if (hours == 0) {
+    hours = '12';
+  } else {
+    hours = padNumber(hours, 2);
+  }
+
+  let minutes = padNumber(dateObj.getMinutes(), 2);
+  let ampm = (militaryHours >= 12) ? 'PM' : 'AM';
+
+  return hours + ':' + minutes + ' ' + ampm;
+}
+
+function formatDate(dateObj, keepTime=false) {
   // Short month names
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -72,9 +98,15 @@ function formatDate(dateObj) {
   let date = dateObj.getDate().toString();
   let month = dateObj.getMonth().toString();
   let year = dateObj.getFullYear().toString();
+  let time = format12HourTime(dateObj);
 
   // Return date in this format
-  return date + ' ' + MONTHS[month] + ' ' + year;
+  let dateStr = date + ' ' + MONTHS[month] + ' ' + year;
+  if (keepTime) {
+    dateStr += ' ' + time;
+  }
+
+  return dateStr;
 }
 
 function getNextWeekDate(dateObj) {
@@ -95,7 +127,7 @@ function filterHTMLElementsByNodeName(elements, name) {
   return filteredElements;
 }
 
-function setDateInputsRecurring(dateInputs) {
+function setDateInputsRecurring(dateInputs, keepTime=false) {
   // Get first input
   let firstInput = dateInputs[0];
   // Get date one week from the date set in the first input
@@ -107,8 +139,8 @@ function setDateInputsRecurring(dateInputs) {
     if (input === firstInput)
       continue;
 
-    // Format the date for the datepicke input
-    input.value = formatDate(nextDate);
+    // Format the date for the datepicker input
+    input.value = formatDate(nextDate, keepTime);
 
     // Calculate date next week
     nextDate = getNextWeekDate(nextDate);
@@ -118,18 +150,25 @@ function setDateInputsRecurring(dateInputs) {
 function updateDates() {
   // Get all start date inputs
   let elements = document.getElementsByClassName('instance-start-date-input');
+  let hiddenElements = document.getElementsByClassName('instance-startDateTime valid');
+
   // Filter out non-input elements
   let dateStartInputs = filterHTMLElementsByNodeName(elements, 'input');
+  let dateStartHiddenInputs = filterHTMLElementsByNodeName(hiddenElements, 'input');
 
   // Get all end date inputs
   elements = document.getElementsByClassName('instance-end-date-input');
+  hiddenElements = document.getElementsByClassName('instance-endDateTime valid');
   // Filter out non-input elements
   let dateEndInputs = filterHTMLElementsByNodeName(elements, 'input');
+  let dateEndHiddenInputs = filterHTMLElementsByNodeName(hiddenElements, 'input');
 
   // Set the array of start inputs as a series of recurrences
-  setDateInputsRecurring(dateStartInputs);
+  setDateInputsRecurring(dateStartInputs, false);
+  setDateInputsRecurring(dateStartHiddenInputs, true);
   // Set the array of end inputs as a series of recurrences
-  setDateInputsRecurring(dateEndInputs);
+  setDateInputsRecurring(dateEndInputs, false);
+  setDateInputsRecurring(dateEndHiddenInputs, true);
 }
 
 function updateLocations(locationName) {
